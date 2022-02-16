@@ -15,19 +15,19 @@ namespace MDR {
         MaxErrorEstimatorOB(int num_dims){
             switch(num_dims){
                 case 1:
-                    c = 1.0 + sqrt(3)/2;
+                    c = 1.0 + 3;
                     break;
                 case 2:
-                    c = 1.0 + 9.0/4;
+                    c = 1.0 + 9;
                     break;
                 case 3:
-                    c = 1.0 + 21.0*sqrt(3)/8;
+                    c = 1.0 + 27;
                     break;
                 default:
                     std::cerr << num_dims << "-Dimentional error estimation not implemented." << std::endl;
                     exit(-1);
             }
-	    c *= 4; // 2 more bitplane for negabinary
+            c *= 4; // 2 more bitplane for negabinary
         }
         MaxErrorEstimatorOB() : MaxErrorEstimatorOB(1) {}
 
