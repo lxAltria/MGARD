@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <cmath>
 #include <bitset>
-#include "Reconstructor/Reconstructor.hpp"
+#include "mgard/progressive/Reconstructor/Reconstructor.hpp"
 #include "RefactorUtils.hpp"
 
 using namespace std;

@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <cmath>
 #include <bitset>
-#include "Refactor/Refactor.hpp"
+#include "mgard/progressive/Refactor/Refactor.hpp"
 
 using namespace std;
 
