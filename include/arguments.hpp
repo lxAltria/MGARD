@@ -21,6 +21,7 @@ struct DataShape {
   std::vector<std::size_t> shape;
 };
 
+//! Smoothness parameter (`s`) used in compressing the dataset.
 template <typename Real> class SmoothnessParameter {
 public:
   //! Constructor.
@@ -36,6 +37,7 @@ public:
   Real s;
 };
 
+//! Parse a command line argument as a `SmoothnessParameter`.
 template <typename Real>
 std::istringstream &operator>>(std::istringstream &stream,
                                SmoothnessParameter<Real> &s) {
@@ -55,11 +57,15 @@ std::istringstream &operator>>(std::istringstream &stream,
 
 namespace TCLAP {
 
+//! Traits for `cli::DataShape`.
 template <> struct ArgTraits<cli::DataShape> {
+  //! Value category for `cli::DataShape`.
   typedef StringLike ValueCategory;
 };
 
+//! Traits for `cli::SmoothnessParameter<double>`.
 template <> struct ArgTraits<cli::SmoothnessParameter<double>> {
+  //! Value category for `cli::SmoothnessParameter<double>`.
   typedef ValueLike ValueCategory;
 };
 
@@ -74,15 +80,17 @@ struct CompressionArguments {
   //!
   //!\param datatype Type of the dataset.
   //!\param shape Shape of the dataset.
-  //!\param input Filename of the input dataset.
   //!\param smoothness Smoothness parameter to use in compression.
   //!\param tolerance Error tolerance to use in compression.
-  //!\param output Filename of the output archive.
+  //!\param input Filename of the input dataset.
+  //!\param output Filename of the output buffer.
   CompressionArguments(
-      TCLAP::ValueArg<std::string> &datatype, TCLAP::ValueArg<DataShape> &shape,
-      TCLAP::ValueArg<std::string> &input,
-      TCLAP::ValueArg<cli::SmoothnessParameter<double>> &smoothness,
-      TCLAP::ValueArg<double> &tolerance, TCLAP::ValueArg<std::string> &output);
+      const TCLAP::ValueArg<std::string> &datatype,
+      const TCLAP::ValueArg<DataShape> &shape,
+      const TCLAP::ValueArg<cli::SmoothnessParameter<double>> &smoothness,
+      const TCLAP::ValueArg<double> &tolerance,
+      const TCLAP::ValueArg<std::string> &input,
+      const TCLAP::ValueArg<std::string> &output);
 
   //! Type of the dataset.
   std::string datatype;
@@ -93,19 +101,16 @@ struct CompressionArguments {
   //! Spatial dimension of the dataset.
   std::size_t dimension;
 
-  //! Filenames of the coordinates of the nodes in each dimension.
-  std::vector<std::string> coordinate_filenames;
-
-  //! Filename of the input dataset.
-  std::string input;
-
   //! Smoothness parameter to use in compression.
   double s;
 
   //! Error tolerance to use in compression.
   double tolerance;
 
-  //! Filename of the output archive.
+  //! Filename of the input dataset.
+  std::string input;
+
+  //! Filename of the output buffer.
   std::string output;
 };
 
@@ -113,12 +118,12 @@ struct CompressionArguments {
 struct DecompressionArguments {
   //! Constructor.
   //!
-  //!\param input Filename of the input archive.
-  //!\param input Filename of the output dataset.
-  DecompressionArguments(TCLAP::ValueArg<std::string> &input,
-                         TCLAP::ValueArg<std::string> &output);
+  //!\param input Filename of the input buffer.
+  //!\param output Filename of the output dataset.
+  DecompressionArguments(const TCLAP::ValueArg<std::string> &input,
+                         const TCLAP::ValueArg<std::string> &output);
 
-  //! Filename of the input archive.
+  //! Filename of the input buffer.
   std::string input;
 
   //! Filename of the output dataset.

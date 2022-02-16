@@ -7,13 +7,13 @@ if(@ZLIB_FOUND@)
 	list(APPEND REQUIRED_VARS ZLIB_FOUND)
 endif()
 
-if(@ZSTD_FOUND@)
-	find_dependency(ZSTD)
-	list(APPEND REQUIRED_VARS ZSTD_FOUND)
+if(@zstd_FOUND@)
+  find_dependency(zstd)
+	list(APPEND REQUIRED_VARS zstd_FOUND)
 endif()
 
 if(@NVCOMP_FOUND@)
-	find_dependency(NVCOMP)
+	find_dependency(nvcomp)
 	list(APPEND REQUIRED_VARS NVCOMP_FOUND)
 endif()
 
@@ -25,6 +25,12 @@ endif()
 if(@MOAB_FOUND@)
 	find_dependency(MOAB)
 	list(APPEND REQUIRED_VARS MOAB_FOUND)
+endif()
+
+if(@protobuf_FOUND@)
+	find_package(PkgConfig REQUIRED)
+	pkg_search_module(protobuf IMPORTED_TARGET GLOBAL REQUIRED protobuf>=3.0.0)
+	list(APPEND REQUIRED_VARS protobuf_FOUND)
 endif()
 
 if(@OpenMP_FOUND@)
@@ -48,3 +54,16 @@ set(MGARD_LIBRARIES mgard::mgard)
 set(MGARD_INCLUDE_DIRS
   $<TARGET_PROPERTY:mgard::mgard,INTERFACE_INCLUDE_DIRECTORIES>
 )
+
+
+if (@MGARD_ENABLE_SERIAL@)
+	SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DMGARD_ENABLE_SERIAL")
+endif()
+if (@MGARD_ENABLE_CUDA@)
+	SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DMGARD_ENABLE_CUDA")
+	SET(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DMGARD_ENABLE_CUDA")
+endif()
+if (@MGARD_ENABLE_HIP@)
+	SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DMGARD_ENABLE_HIP")
+endif()
+

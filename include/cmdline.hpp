@@ -16,7 +16,9 @@
 #include <tclap/ValuesConstraint.h>
 #include <tclap/VersionVisitor.h>
 
-// Base class for sub- and supercommand parsers.
+namespace cli {
+
+//! Base class for sub- and supercommand parsers.
 class BaseCmdLine : public TCLAP::CmdLineInterface {
 public:
   //! Constructor.
@@ -27,31 +29,63 @@ public:
   BaseCmdLine(const std::string &version, const std::string &message,
               TCLAP::CmdLineOutput *const output);
 
-  virtual void add(TCLAP::Arg &a) override;
+  //! Add an argument to the interface.
+  virtual TCLAP::ArgContainer &add(TCLAP::Arg &a) override;
 
-  virtual void add(TCLAP::Arg *a) override;
+  //!\copydoc BaseCmdLine::add(TCLAP::Arg &)
+  virtual TCLAP::ArgContainer &add(TCLAP::Arg *a) override;
 
+  //! Add an argument to the internal argument list.
+  //!
+  //!\note This is an internal function. Do not call it.
+  virtual void addToArgList(TCLAP::Arg *a) override;
+
+  //! Add an argument group to the interface.
+  virtual TCLAP::ArgContainer &add(TCLAP::ArgGroup &args) override;
+
+  //! Add a mutually exclusive pair of arguments.
+  //!
+  //!\deprecated Use `OneOf` instead.
   virtual void xorAdd(TCLAP::Arg &a, TCLAP::Arg &b) override;
 
-  virtual void xorAdd(std::vector<TCLAP::Arg *> &xors) override;
+  //! Add a mutually exclusive list of arguments.
+  //!
+  //!\deprecated Use `OneOf` instead.
+  virtual void xorAdd(const std::vector<TCLAP::Arg *> &xors) override;
 
-  virtual TCLAP::CmdLineOutput *getOutput() override;
-
+  //! Set associated output object.
   virtual void setOutput(TCLAP::CmdLineOutput *co) override;
 
-  virtual std::string &getVersion() override;
+  //! Return version string.
+  virtual std::string getVersion() const override;
 
-  virtual std::string &getProgramName() override;
+  //! Return program name.
+  virtual std::string getProgramName() const override;
 
-  virtual std::list<TCLAP::Arg *> &getArgList() override;
+  //! Return list of arguments.
+  virtual std::list<TCLAP::Arg *> getArgList() const override;
 
-  virtual TCLAP::XorHandler &getXorHandler() override;
+  //! Return list of argument groups.
+  virtual std::list<TCLAP::ArgGroup *> getArgGroups() override;
 
-  virtual char getDelimiter() override;
+  //! Return the character used to separate argument names from values.
+  virtual char getDelimiter() const override;
 
-  virtual std::string &getMessage() override;
+  //! Return message describing program.
+  virtual std::string getMessage() const override;
 
+  //! Reset the `BaseCmdLine`.
   virtual void reset() override;
+
+  //! Begin ignoring arguments.
+  //!
+  //!\note This is an internal function. Do not call it.
+  virtual void beginIgnoring() override;
+
+  //! Return whether the rest of the arguments should be ignored.
+  //!
+  //!\note This is an internal function. Do not call it.
+  virtual bool ignoreRest() override;
 
 protected:
   //! Name used to call the program.
@@ -88,14 +122,14 @@ public:
   //! Destructor.
   ~SubCmdLine();
 
+  //! Parse the command arguments.
   virtual void parse(int argc, const char *const *const argv) override;
 
-  //! Parse the subcommand arguments.
-  //!
-  //!\param arg Subcommand arguments.
+  //!\copydoc SubCmdLine::parse(int,const char * const * const)
   void parse(std::vector<std::string> &args);
 
-  virtual bool hasHelpAndVersion() override;
+  //! Return whether the parser has automatic help and version switches.
+  virtual bool hasHelpAndVersion() const override;
 
   //! Add the help argument to the argument list.
   //!
@@ -118,14 +152,14 @@ public:
   //! Destructor.
   ~SuperCmdLine();
 
+  //!\copydoc SubCmdLine::parse(int,const char * const * const)
   virtual void parse(int argc, const char *const *const argv) override;
 
-  //! Parse the supercommand arguments.
-  //!
-  //!\param arg Supercommand arguments.
+  //!\copydoc SuperCmdLine::parse(int,const char * const * const)
   void parse(std::vector<std::string> &args);
 
-  virtual bool hasHelpAndVersion() override;
+  //!\copydoc SubCmdLine::hasHelpAndVersion()
+  virtual bool hasHelpAndVersion() const override;
 
   //! Report the subcommand specified by the arguments.
   //!
@@ -151,5 +185,7 @@ private:
   //! Argument for the subcommand.
   TCLAP::UnlabeledValueArg<std::string> _subcommandArg;
 };
+
+} // namespace cli
 
 #endif

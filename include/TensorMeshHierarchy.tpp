@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <type_traits>
 
+#include "format.hpp"
+
 namespace mgard {
 
 static std::size_t log2(std::size_t n) {
@@ -38,7 +40,7 @@ template <std::size_t N, typename Real>
 TensorMeshHierarchy<N, Real>::TensorMeshHierarchy(
     const std::array<std::size_t, N> &shape,
     const std::array<std::vector<Real>, N> &coordinates)
-    : coordinates(coordinates) {
+    : coordinates(coordinates), uniform(false) {
   for (std::size_t i = 0; i < N; ++i) {
     if (coordinates.at(i).size() != shape.at(i)) {
       throw std::invalid_argument("incorrect number of node coordinates given");
@@ -159,7 +161,9 @@ default_node_coordinates(const std::array<std::size_t, N> &shape) {
 template <std::size_t N, typename Real>
 TensorMeshHierarchy<N, Real>::TensorMeshHierarchy(
     const std::array<std::size_t, N> &shape)
-    : TensorMeshHierarchy(shape, default_node_coordinates<N, Real>(shape)) {}
+    : TensorMeshHierarchy(shape, default_node_coordinates<N, Real>(shape)) {
+  uniform = true;
+}
 
 template <std::size_t N, typename Real>
 bool operator==(const TensorMeshHierarchy<N, Real> &a,
@@ -284,6 +288,61 @@ template <std::size_t N, typename Real>
 const Real &TensorMeshHierarchy<N, Real>::at(
     Real const *const v, const std::array<std::size_t, N> multiindex) const {
   return at<const Real>(v, multiindex);
+}
+
+template <std::size_t N, typename Real>
+void TensorMeshHierarchy<N, Real>::populate_domain(pb::Header &header) const {
+  const std::array<std::size_t, N> &SHAPE = shapes.back();
+  pb::Domain &domain = *header.mutable_domain();
+
+  domain.set_topology(pb::Domain::CARTESIAN_GRID);
+
+  pb::CartesianGridTopology &cartesian_grid_topology =
+      *domain.mutable_cartesian_grid_topology();
+  cartesian_grid_topology.set_dimension(N);
+  google::protobuf::RepeatedField<google::protobuf::uint64> &shape =
+      *cartesian_grid_topology.mutable_shape();
+  shape.Resize(N, 0);
+  std::copy(SHAPE.begin(), SHAPE.end(), shape.mutable_data());
+
+  pb::Domain::Geometry geometry;
+  if (uniform) {
+    geometry = pb::Domain::UNIT_CUBE;
+  } else {
+    geometry = pb::Domain::EXPLICIT_CUBE;
+    pb::ExplicitCubeGeometry &explicit_cube_geometry =
+        *domain.mutable_explicit_cube_geometry();
+    google::protobuf::RepeatedField<double> &coordinates_ =
+        *explicit_cube_geometry.mutable_coordinates();
+    coordinates_.Resize(std::accumulate(SHAPE.begin(), SHAPE.end(), 0), 0);
+    double *p = coordinates_.mutable_data();
+    for (const std::vector<Real> &xs : coordinates) {
+      std::copy(xs.begin(), xs.end(), p);
+      p += xs.size();
+    }
+  }
+  domain.set_geometry(geometry);
+}
+
+template <std::size_t N, typename Real>
+void TensorMeshHierarchy<N, Real>::populate_dataset(pb::Header &header) const {
+  pb::Dataset &dataset = *header.mutable_dataset();
+  dataset.set_type(type_to_dataset_type<Real>());
+  dataset.set_dimension(1);
+}
+
+template <std::size_t N, typename Real>
+void TensorMeshHierarchy<N, Real>::populate_decomposition(
+    pb::Header &header) const {
+  pb::Decomposition &decomposition = *header.mutable_decomposition();
+  decomposition.set_hierarchy(pb::Decomposition::POWER_OF_TWO_PLUS_ONE);
+}
+
+template <std::size_t N, typename Real>
+void TensorMeshHierarchy<N, Real>::populate(pb::Header &header) const {
+  populate_domain(header);
+  populate_dataset(header);
+  populate_decomposition(header);
 }
 
 template <std::size_t N, typename Real>
